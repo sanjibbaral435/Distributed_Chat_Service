@@ -1,0 +1,137 @@
+// Copyright 2015, Google Inc.
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+syntax = "proto3";
+
+package hw2;
+
+import "google/protobuf/timestamp.proto";
+
+// The messenger service definition.
+service MessengerServer {
+  
+  rpc heartBeat (RankRequest) returns (RankResponse){}
+  rpc writeToFile (Request) returns (Reply) {}
+  rpc getClientDbFromHere (Request) returns (ClientDB) {}
+  rpc bringUpLocalProc (MasterRequest) returns (Reply) {}
+  
+  rpc Login (Request) returns (Reply) {}
+  rpc List (Request) returns (ListReply) {}
+  rpc Join (Request) returns (Reply) {}
+  rpc Leave (Request) returns (Reply) {}
+  // Bidirectional streaming RPC
+  rpc Chat (stream Message) returns (stream Message) {} 
+}
+
+service MasterServer {
+
+  rpc getWorkerMapFromOtherMaster(MasterRequest) returns (WorkerMapReply) {}
+  rpc initClient_DB (Request) returns (ClientDB) {}
+  rpc replicateMessage (Request) returns (Reply) {}
+  rpc getWorker (Request) returns (Reply) {}
+  rpc leave (Request) returns (Reply) {}
+  rpc login (Request) returns (Reply) {}
+  rpc join (Request) returns (Reply) {}
+  rpc setMapByWorker(MasterRequest) returns (MasterReply) {}
+  rpc setMapEntry(MasterRequest) returns (MasterReply) {}
+  rpc heartBeat (MasterRequest) returns (MasterReply) {}
+  rpc getRank (RankRequest) returns (RankResponse) {}
+  rpc getLogData (LogRequest) returns (LogResponse) {}
+}
+
+message WorkerMapReply{
+	int32 size=1;
+	repeated string workerIp=2;
+	repeated int32 workerRank=3;
+}
+
+message ListReply {
+  repeated string all_rooms = 1;
+  repeated string joined_rooms = 2;
+}
+
+message Request {
+  string username = 1;
+  repeated string arguments = 2;
+}
+
+message Reply {
+  string msg = 1;
+}
+
+message RankRequest {
+  string port = 1;
+}
+
+message RankResponse {
+  int32 rank = 1;
+}
+
+message MasterRequest {
+  string addr = 1;
+  int32 rank = 2;
+}
+
+message MasterReply {
+  string msg = 1;
+}
+
+
+message Message {
+  //Username who sent the message
+  string username = 1;
+  //Message from the user
+  string msg = 2;
+  //Time the message was sent
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+message ClientProto{
+	string username=1;
+	bool connected=2;
+	int32 following_file_size=3;
+	repeated string following=4;
+	int32 followers_size=5;
+}
+
+message ClientDB{
+	int32 clientDbSize=1;
+	repeated ClientProto client=2;
+}
+
+message LogRequest {
+  string clientname = 1;
+  //string followersfilename = 2;
+}
+
+message LogResponse {
+  bytes clientfile = 1;
+  bytes followersfile = 2;
+}
+
